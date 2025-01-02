@@ -16,8 +16,7 @@ const navigation = [
     href: "#",
     icon: FileText,
     disabled: true,
-    badge: "Coming Soon",
-    description: "View and manage your optimized resumes"
+    description: "Coming soon"
   }
 ];
 
@@ -60,9 +59,8 @@ export default function DashboardSidebar() {
                   <Link
                     href={item.href}
                     className={`
-                      relative group
-                      flex items-center justify-between gap-3 px-3 py-3 rounded-lg
-                      transition-all duration-200
+                      flex items-center gap-3 px-3 py-2 rounded-lg
+                      transition-colors
                       ${item.disabled ? 'cursor-not-allowed' : ''}
                       ${isActive 
                         ? 'bg-primary text-white' 
@@ -71,22 +69,13 @@ export default function DashboardSidebar() {
                     `}
                     onClick={e => item.disabled && e.preventDefault()}
                   >
-                    <div className="flex items-center gap-3">
-                      <item.icon className={`w-5 h-5 ${item.disabled ? 'opacity-50' : ''}`} />
-                      <div>
-                        <span className={item.disabled ? 'opacity-50' : ''}>{item.name}</span>
-                        {item.description && item.disabled && (
-                          <p className="text-xs text-zinc-500 mt-0.5 pr-4">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
+                    <item.icon className={`w-5 h-5 ${item.disabled ? 'opacity-40' : ''}`} />
+                    <div className={item.disabled ? 'opacity-40' : ''}>
+                      <div>{item.name}</div>
+                      {item.description && (
+                        <div className="text-xs text-zinc-500">{item.description}</div>
+                      )}
                     </div>
-                    {item.badge && (
-                      <span className="absolute right-3 top-3 text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full tracking-wide">
-                        {item.badge}
-                      </span>
-                    )}
                   </Link>
                 </li>
               );
