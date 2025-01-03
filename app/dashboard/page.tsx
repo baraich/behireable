@@ -10,13 +10,6 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { PdfWorker } from '@/app/components/PdfWorker';
 import * as pdfjsLib from "pdfjs-dist";
-import pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
-
-// Initialize pdfmake with fonts
-pdfMake.vfs = pdfFonts.vfs;
 
 interface JobDetails {
   jobTitle: string;
@@ -155,69 +148,13 @@ export default function DashboardPage() {
       }
 
       const data = await response.json();
-
-      // Create temporary container for HTML content
-      const container = document.createElement('div');
-      container.innerHTML = data.htmlContent;
-      container.style.width = '210mm'; // A4 width
-      container.style.margin = '0';
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      document.body.appendChild(container);
-
-      try {
-        // Convert to canvas
-        const canvas = await html2canvas(container, {
-          scale: 2, // Higher quality
-          useCORS: true,
-          logging: false,
-          width: 795, // A4 width at 300 DPI
-          height: 1120, // A4 height at 300 DPI
-          windowWidth: 795,
-          windowHeight: 1120,
-        });
-
-        // Initialize PDF
-        const pdf = new jsPDF({
-          format: 'a4',
-          unit: 'mm',
-          orientation: 'portrait',
-        });
-
-        // Add image to PDF maintaining aspect ratio
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-
-        // Get PDF as blob
-        const pdfBlob = pdf.output('blob');
-        const downloadUrl = URL.createObjectURL(pdfBlob);
-
-        // Trigger download
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${jobDetails.jobTitle.toLowerCase().replace(/\s+/g, '-')}–${jobDetails.company.toLowerCase().replace(/\s+/g, '-')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-
-        // Cleanup
-        document.body.removeChild(link);
-        document.body.removeChild(container);
-        URL.revokeObjectURL(downloadUrl);
-
-        toast.success('Resume optimization completed!');
-        
-        // Reset form
-        setSelectedFile(null);
-        setJobUrl("");
-        setJobDetails(null);
-        setPdfText(null);
-
-      } catch (pdfError) {
-        console.error('PDF generation error:', pdfError);
-        throw new Error('Failed to generate PDF');
-      }
+      toast.success('Resume optimization request sent successfully!');
+      
+      // Reset form
+      setSelectedFile(null);
+      setJobUrl("");
+      setJobDetails(null);
+      setPdfText(null);
 
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to optimize resume');
