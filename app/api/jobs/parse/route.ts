@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +12,43 @@ export async function POST(req: Request) {
       );
     }
 
+    // Extract job ID from URL
+    const jobId = url.match(/jobs\/view\/(\d+)/)?.[1];
+    if (!jobId) {
+      return NextResponse.json(
+        { error: 'Invalid LinkedIn job URL format' },
+        { status: 400 }
+      );
+    }
+
+    // Try to get job from database first
+    const existingJob = await prisma.jobApplication.findFirst({
+      where: {
+        id: jobId
+      }
+    });
+
+    if (existingJob) {
+      return NextResponse.json({
+        jobTitle: existingJob.jobTitle,
+        company: existingJob.company,
+        location: existingJob.location,
+        description: existingJob.description,
+        jobId: existingJob.id,
+        source: 'LinkedIn',
+        parsed_at: existingJob.createdAt.toISOString(),
+        companyDetails: {
+          industries: existingJob.industries,
+        },
+        jobDetails: {
+          type: existingJob.type,
+          workPlace: existingJob.workPlace,
+          industries: existingJob.industries,
+        },
+      });
+    }
+
+    // If not in database, fetch from API
     const encodedUrl = encodeURIComponent(url);
     const rapidApiResponse = await fetch(
       `https://fresh-linkedin-profile-data.p.rapidapi.com/get-job-details?job_url=${encodedUrl}&include_skills=false&include_hiring_team=false`,
@@ -34,6 +72,20 @@ export async function POST(req: Request) {
     }
 
     const { data } = response;
+
+    // Save to database
+    await prisma.jobApplication.create({
+      data: {
+        id: jobId,
+        jobTitle: data.job_title,
+        company: data.company_name,
+        description: data.job_description,
+        location: data.job_location,
+        type: data.job_type,
+        workPlace: data.remote_allow ? 'Remote' : data.job_location,
+        industries: data.industries || [],
+      }
+    });
 
     return NextResponse.json({
       jobTitle: data.job_title,
@@ -66,12 +118,12 @@ export async function POST(req: Request) {
         workPlace: data.remote_allow ? 'Remote' : data.job_location,
         workRemoteAllowed: data.remote_allow,
         experienceLevel: data.experience_level,
-        functions: [], // Not provided in new API
+        functions: [],
         industries: data.industries,
-        applies: 0, // Not provided in new API
-        views: 0, // Not provided in new API
-        postedDate: new Date().toISOString(), // Not provided in new API
-        expiresAt: new Date().toISOString(), // Not provided in new API
+        applies: 0,
+        views: 0,
+        postedDate: new Date().toISOString(),
+        expiresAt: new Date().toISOString(),
         salary: data.salary_details ? {
           min: data.salary_details.min_salary,
           max: data.salary_details.max_salary,

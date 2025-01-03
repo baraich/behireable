@@ -25,7 +25,7 @@ export default function RootLayout({
       <html lang="en" className={poppins.className}>
         <body>
           {children}
-          <Toaster theme="dark" position="top-right" />
+          <Toaster className={poppins.className} theme="dark" position="top-right" />
         </body>
       </html>
     </ClerkProvider>
