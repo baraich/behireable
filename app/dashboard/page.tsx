@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload, Link as LinkIcon, Loader2, ArrowRight, FileIcon, Building2, MapPin, Users } from "lucide-react";
-import { useState, useCallback } from "react";
+import { Upload, Link as LinkIcon, Loader2, ArrowRight, FileIcon, Building2, MapPin, Users, FileCheck, FileX, Loader } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { PdfWorker } from '@/app/components/PdfWorker';
 import * as pdfjsLib from "pdfjs-dist";
+import { format } from "date-fns";
 
 interface JobDetails {
   jobTitle: string;
@@ -59,6 +60,14 @@ interface JobDetails {
   applyUrl: string;
 }
 
+interface RecentResume {
+  id: string;
+  jobTitle: string;
+  company: string;
+  status: string;
+  createdAt: string;
+}
+
 async function extractTextFromPdf(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -89,6 +98,7 @@ export default function DashboardPage() {
   const [isLoadingJob, setIsLoadingJob] = useState(false);
   const [pdfText, setPdfText] = useState<string | null>(null);
   const [downloadUrl] = useState<string | null>(null);
+  const [recentResumes, setRecentResumes] = useState<RecentResume[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
@@ -147,7 +157,7 @@ export default function DashboardPage() {
         throw new Error(error.error || 'Failed to optimize resume');
       }
 
-      const data = await response.json();
+      await response.json();
       toast.success('Resume optimization request sent successfully!');
       
       // Reset form
@@ -203,6 +213,23 @@ export default function DashboardPage() {
       await parseJobUrl(url);
     }
   };
+
+  const fetchRecentResumes = async () => {
+    try {
+      const response = await fetch('/api/resumes/recent');
+      if (!response.ok) throw new Error('Failed to fetch recent resumes');
+      const data = await response.json();
+      setRecentResumes(data);
+    } catch (error) {
+      console.error('Error fetching recent resumes:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentResumes();
+    const interval = setInterval(fetchRecentResumes, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -414,10 +441,47 @@ export default function DashboardPage() {
             <CardTitle className="text-white">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center text-zinc-400">
-              <p className="text-lg font-medium mb-2">Coming Soon</p>
-              <p className="text-sm">Track your resume optimization history and status</p>
-            </div>
+            {recentResumes.length > 0 ? (
+              <div className="space-y-4">
+                {recentResumes.map((resume) => (
+                  <div
+                    key={resume.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-zinc-800/50"
+                  >
+                    <div className="flex items-center gap-4">
+                      {resume.status === 'completed' ? (
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <FileCheck className="w-5 h-5 text-green-500" />
+                        </div>
+                      ) : resume.status === 'failed' ? (
+                        <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                          <FileX className="w-5 h-5 text-red-500" />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Loader className="w-5 h-5 text-primary animate-spin" />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-medium text-white">{resume.jobTitle}</h3>
+                        <p className="text-sm text-zinc-400">{resume.company}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-zinc-400">
+                        {format(new Date(resume.createdAt), 'MMM d, h:mm a')}
+                      </p>
+                      <p className="text-sm text-zinc-500 capitalize">{resume.status}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center text-zinc-400">
+                <p className="text-lg font-medium mb-2">No Recent Activity</p>
+                <p className="text-sm">Your optimization history will appear here</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
