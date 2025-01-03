@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Resume {
+  id            String   @id @default(cuid())
+  clerkId       String   // Store Clerk user ID directly
+  originalText  String   @db.Text
+  optimizedHtml String?  @db.Text
+  jobTitle      String
+  company       String
+  status        String   @default("completed") // completed, failed, processing
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clerkId])
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  jobTitle    String
+  company     String
+  description String   @db.Text
+  location    String
+  type        String
+  workPlace   String
+  industries  String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+} 
