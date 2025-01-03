@@ -1,6 +1,6 @@
 "use client";
 
-import { LightbulbIcon, CheckIcon, XIcon } from "lucide-react";
+import { LightbulbIcon, CheckIcon, XIcon, Upload, Link as LinkIcon, Sparkles, FileDown, ShieldQuestion } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import Navbar from "@/app/components/Navbar";
@@ -40,15 +40,24 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-24">
+      <section id="how-it-works" className="py-24 bg-white border-t">
         <div className="container">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="text-center">
-                <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-primary font-bold text-xl">{index + 1}</span>
+                <div className="bg-muted/30 p-8 rounded-2xl shadow-sm hover:shadow-md transition-all border border-zinc-200 relative group overflow-hidden hover:bg-white">
+                  {/* Number Badge */}
+                  {/* <div className="absolute -top-2 -left-2 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center transform rotate-12">
+                    <span className="text-primary font-bold text-xl transform -rotate-12">{index + 1}</span>
+                  </div> */}
+                  
+                  {/* Content */}
+                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    {index === 0 && <Upload className="w-6 h-6 text-primary" />}
+                    {index === 1 && <LinkIcon className="w-6 h-6 text-primary" />}
+                    {index === 2 && <Sparkles className="w-6 h-6 text-primary" />}
+                    {index === 3 && <FileDown className="w-6 h-6 text-primary" />}
                   </div>
                   <h3 className="font-semibold text-lg mb-3">{step.title}</h3>
                   <p className="text-muted-foreground">{step.description}</p>
@@ -60,7 +69,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-24 bg-muted/50">
+      <section id="testimonials" className="py-24 bg-muted/50 border-t">
         <div className="container">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">What Our Users Say</h2>
           <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
@@ -112,7 +121,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section - Moved below testimonials */}
-      <section id="pricing" className="py-24">
+      <section id="pricing" className="py-24 border-t">
         <div className="container">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
           <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
@@ -191,25 +200,36 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-24 bg-muted/50">
+      <section id="faq" className="py-24 bg-muted/50 border-t">
         <div className="container">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Frequently Asked Questions
           </h2>
-          <div className="max-w-3xl mx-auto space-y-6">
+          <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+            Everything you need to know about BeHireable
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group"
               >
-                <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                <p className="text-muted-foreground">{faq.answer}</p>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <ShieldQuestion className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{faq.answer}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
 
           {/* CTA in FAQ Section */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <p className="text-lg text-muted-foreground mb-4">
               Still have questions? We&apos;re here to help!
             </p>
