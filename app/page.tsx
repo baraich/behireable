@@ -3,7 +3,6 @@
 import { LightbulbIcon, CheckIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import Navbar from "@/app/components/Navbar";
 
 export default function Home() {
@@ -88,7 +87,7 @@ export default function Home() {
                 {/* Testimonial Content */}
                 <blockquote className="mb-6">
                   <p className="text-foreground mb-4 leading-relaxed">
-                    "{testimonial.quote}"
+                    &quot;{testimonial.quote}&quot;
                   </p>
                 </blockquote>
                 
@@ -212,7 +211,7 @@ export default function Home() {
           {/* CTA in FAQ Section */}
           <div className="text-center mt-12">
             <p className="text-lg text-muted-foreground mb-4">
-              Still have questions? We're here to help!
+              Still have questions? We&apos;re here to help!
             </p>
             <button className="btn-primary text-base px-8 py-4">
               Get started for free →

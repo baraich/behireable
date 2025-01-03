@@ -12,7 +12,6 @@ import { PdfWorker } from '@/app/components/PdfWorker';
 import * as pdfjsLib from "pdfjs-dist";
 import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
-import htmlToPdfMake from 'html-to-pdfmake';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -77,7 +76,7 @@ async function extractTextFromPdf(file: File): Promise<string> {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       const pageText = content.items
-        .map((item: any) => item.str)
+        .map((item: unknown) => (item as {str: string}).str)
         .join(' ');
       fullText += pageText + '\n';
     }
@@ -96,7 +95,7 @@ export default function DashboardPage() {
   const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
   const [isLoadingJob, setIsLoadingJob] = useState(false);
   const [pdfText, setPdfText] = useState<string | null>(null);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [downloadUrl] = useState<string | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles[0]) {
@@ -106,6 +105,9 @@ export default function DashboardPage() {
         setPdfText(text);
       } catch (error) {
         toast.error('Failed to read PDF content');
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+        }
         setSelectedFile(null);
         setPdfText(null);
       }
