@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload, Link as LinkIcon, Loader2, ArrowRight, FileIcon, Building2, MapPin, Users, FileCheck, FileX, Loader } from "lucide-react";
+import { Upload, Link as LinkIcon, Loader2, ArrowRight, FileIcon, Building2, MapPin, Users, FileCheck, FileX, Loader, Download } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { PdfWorker } from '@/app/components/PdfWorker';
 import * as pdfjsLib from "pdfjs-dist";
 import { format } from "date-fns";
+import { convertHtmlToPdf } from '@/lib/html-to-pdf';
 
 interface JobDetails {
   jobTitle: string;
@@ -230,6 +231,37 @@ export default function DashboardPage() {
     const interval = setInterval(fetchRecentResumes, 15000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleDownload = async (resumeId: string) => {
+    try {
+      const response = await fetch(`/api/resumes/${resumeId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch resume');
+      }
+
+      const data = await response.json();
+      if (!data.optimizedHtml) {
+        throw new Error('Resume not ready yet');
+      }
+
+      const pdfBlob = await convertHtmlToPdf(data.optimizedHtml);
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `optimized-resume.pdf`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+
+      toast.success('Resume downloaded successfully!');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to download resume');
+    }
+  };
 
   return (
     <>
@@ -467,11 +499,23 @@ export default function DashboardPage() {
                         <p className="text-sm text-zinc-400">{resume.company}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-zinc-400">
-                        {format(new Date(resume.createdAt), 'MMM d, h:mm a')}
-                      </p>
-                      <p className="text-sm text-zinc-500 capitalize">{resume.status}</p>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm text-zinc-400">
+                          {format(new Date(resume.createdAt), 'MMM d, h:mm a')}
+                        </p>
+                        <p className="text-sm text-zinc-500 capitalize">{resume.status}</p>
+                      </div>
+                      {resume.status === 'completed' && (
+                        <Button
+                          onClick={() => handleDownload(resume.id)}
+                          variant="ghost"
+                          size="icon"
+                          className="text-zinc-400 hover:text-white"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
